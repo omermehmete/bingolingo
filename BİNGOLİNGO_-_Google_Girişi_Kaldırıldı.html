@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BİNGOLİNGO - MEB Uyumlu İngilizce Öğrenme & Yarış</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f7ff;
+        }
+        /* 3D Kart Çevirme Efekti */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .card-flipped .transform-style-3d {
+            transform: rotateY(180deg);
+        }
+        /* Özel Kaydırma Çubuğu */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0f2fe;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Bildirim Kutusu (alert yerine) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Google Giriş Modalı -->
+    <div id="google-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-blue-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <h3 class="font-bold text-lg text-slate-800">Google ile Giriş</h3>
+                </div>
+                <button onclick="closeGoogleModal()" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+            </div>
+            <p class="text-sm text-slate-500 mb-4">BİNGOLİNGO'ya devam etmek için Google hesabınızla bağlanın:</p>
+            <div class="space-y-2">
+                <button onclick="loginWithGoogleAccount()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition">
+                    Google Hesabı ile Devam Et
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GİRİŞ VE KAYIT EKRANI -->
+    <div id="auth-screen" class="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 border border-blue-200">
+            <!-- Mavi Baykuş Logo -->
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center shadow-inner mb-3 border border-blue-100">
+                    <svg class="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="50" cy="56" rx="34" ry="36" fill="#2563EB"/>
+                        <ellipse cx="50" cy="64" rx="22" ry="24" fill="#93C5FD"/>
+                        <path d="M22 30L14 14L34 24Z" fill="#1D4ED8"/>
+                        <path d="M78 30L86 14L66 24Z" fill="#1D4ED8"/>
+                        <circle cx="36" cy="44" r="12" fill="white"/>
+                        <circle cx="64" cy="44" r="12" fill="white"/>
+                        <circle cx="38" cy="44" r="6" fill="#0F172A"/>
+                        <circle cx="62" cy="44" r="6" fill="#0F172A"/>
+                        <circle cx="40" cy="42" r="2" fill="white"/>
+                        <circle cx="64" cy="42" r="2" fill="white"/>
+                        <path d="M44 52L50 62L56 52Z" fill="#F59E0B"/>
+                        <path d="M36 90L32 96M40 90L40 96M60 90L60 96M64 90L68 96" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-blue-700 tracking-tight">BİNGOLİNGO</h1>
+                <p class="text-sm text-slate-500 mt-1 text-center">MEB Maarif Modeli İngilizce Öğrenme & Yarış</p>
+            </div>
+
+            <!-- Sekmeler -->
+            <div class="flex bg-blue-50 p-1 rounded-xl mb-5">
+                <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition">Giriş Yap</button>
+                <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition">Kayıt Ol</button>
+            </div>
+
+            <!-- Form -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">E-posta Adresi</label>
+                    <input type="email" id="auth-username" required placeholder="ör. ali@gmail.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition">
+                </div>
+
+                <div id="register-extra" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Sınıf Seviyen</label>
+                        <select id="auth-grade" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm bg-white">
+                            <option value="1">1. Sınıf (İlkokul)</option>
+                            <option value="2">2. Sınıf (İlkokul)</option>
+                            <option value="3">3. Sınıf (İlkokul)</option>
+                            <option value="4">4. Sınıf (İlkokul)</option>
+                            <option value="5" selected>5. Sınıf (Ortaokul)</option>
+                            <option value="6">6. Sınıf (Ortaokul)</option>
+                            <option value="7">7. Sınıf (Ortaokul)</option>
+                            <option value="8">8. Sınıf (Ortaokul - LGS)</option>
+                            <option value="9">9. Sınıf (Lise)</option>
+                            <option value="10">10. Sınıf (Lise)</option>
+                            <option value="11">11. Sınıf (Lise)</option>
+                            <option value="12">12. Sınıf (Lise - YKS)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Şifre</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition">
+                </div>
+
+                <button type="submit" id="auth-submit-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-200 transition active:scale-[0.99]">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ANA UYGULAMA EKRANI -->
+    <div id="app-screen" class="hidden flex-1 flex flex-col">
+        <!-- Üst Menü (Header) -->
+        <header class="bg-blue-700 text-white shadow-lg sticky top-0 z-30">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow">
+                        <svg class="w-7 h-7" viewBox="0 0 100 100" fill="none">
+                            <ellipse cx="50" cy="56" rx="34" ry="36" fill="#2563EB"/>
+                            <ellipse cx="50" cy="64" rx="22" ry="24" fill="#93C5FD"/>
+                            <circle cx="36" cy="44" r="12" fill="white"/>
+                            <circle cx="64" cy="44" r="12" fill="white"/>
+                            <circle cx="38" cy="44" r="6" fill="#0F172A"/>
+                            <circle cx="62" cy="44" r="6" fill="#0F172A"/>
+                            <path d="M44 52L50 62L56 52Z" fill="#F59E0B"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-lg tracking-tight block leading-none">BİNGOLİNGO</span>
+                        <span class="text-[11px] text-blue-200 font-medium">MEB Maarif Modeli</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center gap-2 bg-blue-800/70 px-3 py-1.5 rounded-xl border border-blue-500/40">
+                        <span class="text-amber-300 text-sm">★</span>
+                        <span id="header-xp" class="text-sm font-bold">0 XP</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-blue-800/70 px-3 py-1.5 rounded-xl border border-blue-500/40">
+                        <span id="header-user" class="text-xs sm:text-sm font-semibold truncate max-w-[100px]">Öğrenci</span>
+                    </div>
+                    <button onclick="logout()" class="p-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-semibold transition" title="Çıkış Yap">
+                        Çıkış
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alt Navigasyon Sekmeleri -->
+            <div class="bg-blue-800/60 border-t border-blue-600/50">
+                <div class="max-w-6xl mx-auto px-4 flex gap-2 overflow-x-auto py-2">
+                    <button onclick="switchMainTab('lessons')" id="nav-lessons" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold bg-white text-blue-700 shadow-sm whitespace-nowrap transition">
+                        📚 Dersler (1-12. Sınıf)
+                    </button>
+                    <button onclick="switchMainTab('friends')" id="nav-friends" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-blue-100 hover:bg-blue-600/50 whitespace-nowrap transition">
+                        👥 Arkadaşlar
+                    </button>
+                    <button onclick="switchMainTab('race')" id="nav-race" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-blue-100 hover:bg-blue-600/50 whitespace-nowrap transition">
+                        🏆 1v1 İngilizce Yarışı
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- İçerik Alanı -->
+        <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6">
+
+            <!-- 1. DERSLER SEKMESİ -->
+            <section id="section-lessons" class="space-y-6">
+                <!-- Sınıf ve Dönem (Kitap) Seçici -->
+                <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-blue-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">MEB Maarif Modeli Ders Kitapları</h2>
+                        <p class="text-xs text-slate-500">Sınıfını ve dönem kitabını seç, 1'den 5'e kadar tüm bölümleri çalış.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <select id="grade-selector" onchange="changeGrade(this.value)" class="px-4 py-2.5 rounded-xl border border-blue-200 bg-blue-50 text-blue-800 font-semibold text-sm outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="1">1. Sınıf</option>
+                            <option value="2">2. Sınıf</option>
+                            <option value="3">3. Sınıf</option>
+                            <option value="4">4. Sınıf</option>
+                            <option value="5">5. Sınıf</option>
+                            <option value="6">6. Sınıf</option>
+                            <option value="7">7. Sınıf</option>
+                            <option value="8">8. Sınıf</option>
+                            <option value="9">9. Sınıf</option>
+                            <option value="10">10. Sınıf</option>
+                            <option value="11">11. Sınıf</option>
+                            <option value="12">12. Sınıf</option>
+                        </select>
+
+                        <!-- 1. Kitap / 2. Kitap Seçimi -->
+                        <div class="flex bg-blue-50 p-1 rounded-xl border border-blue-100">
+                            <button onclick="changeTerm(1)" id="term-btn-1" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition">
+                                1. Dönem (1. Kitap)
+                            </button>
+                            <button onclick="changeTerm(2)" id="term-btn-2" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-700 transition">
+                                2. Dönem (2. Kitap)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bölümler (1-5. Bölüm) -->
+                <div id="chapters-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3"></div>
+
+                <!-- Seçili Bölüm İçeriği -->
+                <div id="chapter-content" class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-blue-100 space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                        <div>
+                            <span id="current-chapter-badge" class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full mb-1">5. Sınıf • 1. Kitap</span>
+                            <h3 id="current-chapter-title" class="text-xl font-extrabold text-slate-800">1. Kitap - 1. Bölüm</h3>
+                        </div>
+                        <button onclick="switchStudyMode('quiz'); startChapterQuiz();" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md shadow-blue-200 transition">
+                            📝 Bölüm Testini Çöz (+20 XP)
+                        </button>
+                    </div>
+
+                    <!-- Öğrenme Araçları Sekmeleri -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 border-b border-slate-100">
+                        <button onclick="switchStudyMode('cards')" id="study-tab-cards" class="study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm whitespace-nowrap transition">🎴 Kelime Kartları</button>
+                        <button onclick="switchStudyMode('match')" id="study-tab-match" class="study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 whitespace-nowrap transition">🧩 Eşleştirme</button>
+                        <button onclick="switchStudyMode('write')" id="study-tab-write" class="study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 whitespace-nowrap transition">✍️ Yazma</button>
+                        <button onclick="switchStudyMode('listen')" id="study-tab-listen" class="study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 whitespace-nowrap transition">🎧 Dinle & Seç</button>
+                        <button onclick="switchStudyMode('scramble')" id="study-tab-scramble" class="study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 whitespace-nowrap transition">🔤 Harf Karıştırma</button>
+                    </div>
+
+                    <!-- 1. 3D Kelime Kartları -->
+                    <div id="study-mode-cards" class="study-mode-panel space-y-4">
+                        <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <span>🎴 Kelime Kartları</span>
+                            <span class="text-xs font-normal text-slate-400">(Çevirmek için karta tıkla, dinlemek için 🔊 bas)</span>
+                        </h4>
+                        <div id="flashcards-container" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                    </div>
+
+                    <!-- 2. Eşleştirme Oyunu -->
+                    <div id="study-mode-match" class="study-mode-panel hidden space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-slate-700">🧩 İngilizce - Türkçe Eşleştirme</h4>
+                            <button onclick="initMatchingGame()" class="text-xs font-bold text-blue-600 hover:underline">🔄 Yeniden Başlat</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div id="match-en-col" class="space-y-2.5"></div>
+                            <div id="match-tr-col" class="space-y-2.5"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Yazma Alıştırması -->
+                    <div id="study-mode-write" class="study-mode-panel hidden bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-slate-800">✍️ Yazma Pratiği</h4>
+                            <span id="write-progress" class="text-xs font-bold text-blue-600 bg-blue-100 px-2.5 py-1 rounded-full">1/3</span>
+                        </div>
+                        <div class="text-center space-y-2">
+                            <p class="text-xs text-slate-500">Aşağıdaki Türkçe kelimenin İngilizcesini yaz:</p>
+                            <div id="write-prompt" class="text-2xl font-extrabold text-blue-700"></div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+                            <input type="text" id="write-input" placeholder="İngilizce karşılığını yaz..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-blue-500">
+                            <button onclick="checkWriteAnswer()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition">Kontrol Et</button>
+                        </div>
+                        <div class="text-center">
+                            <button onclick="showWriteHint()" class="text-xs text-slate-500 hover:text-blue-600 underline">💡 İpucu Göster</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Dinle & Seç -->
+                    <div id="study-mode-listen" class="study-mode-panel hidden bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-4 text-center">
+                        <h4 class="text-sm font-bold text-slate-800">🎧 Dinle ve Doğru Anlamı Seç</h4>
+                        <button onclick="playListenWord()" class="mx-auto w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-2xl shadow-lg flex items-center justify-center transition active:scale-95">🔊</button>
+                        <p class="text-xs text-slate-500">Kelimeyi dinlemek için hoparlöre bas ve doğru Türkçe anlamı seç.</p>
+                        <div id="listen-options" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-w-lg mx-auto"></div>
+                    </div>
+
+                    <!-- 5. Harf Karıştırma -->
+                    <div id="study-mode-scramble" class="study-mode-panel hidden bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-4 text-center">
+                        <h4 class="text-sm font-bold text-slate-800">🔤 Harfleri Düzenle</h4>
+                        <p class="text-xs text-slate-500">Anlamı: <span id="scramble-meaning" class="font-bold text-blue-700"></span></p>
+                        <div id="scramble-letters" class="flex flex-wrap justify-center gap-2 py-2"></div>
+                        <div class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+                            <input type="text" id="scramble-input" placeholder="Doğru kelimeyi yaz..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-blue-500">
+                            <button onclick="checkScrambleAnswer()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition">Doğrula</button>
+                        </div>
+                    </div>
+
+                    <!-- Gramer Notu -->
+                    <div class="bg-blue-50/70 rounded-2xl p-4 border border-blue-100">
+                        <h4 class="text-sm font-bold text-blue-800 mb-1">📘 Dilbilgisi (Grammar) Özeti</h4>
+                        <p id="chapter-grammar" class="text-sm text-slate-700 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Bölüm Quiz Alanı -->
+                    <div id="chapter-quiz-box" class="hidden bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-800">Bölüm Değerlendirme Testi</h4>
+                            <span id="quiz-progress" class="text-xs font-bold text-blue-600 bg-blue-100 px-2.5 py-1 rounded-full">Soru 1/4</span>
+                        </div>
+                        <p id="quiz-question" class="text-base font-semibold text-slate-800"></p>
+                        <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. ARKADAŞLAR SEKMESİ -->
+            <section id="section-friends" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Arkadaş Ekleme -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-blue-100 space-y-4">
+                        <h2 class="text-lg font-bold text-slate-800">Arkadaş Ekle</h2>
+                        <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-500 block">Senin Arkadaş Kodun</span>
+                                <span id="my-friend-code" class="font-mono font-extrabold text-blue-700 text-lg">------</span>
+                            </div>
+                            <button onclick="copyFriendCode()" class="px-3 py-1.5 bg-white hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition">
+                                Kopyala
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="friend-code-input" placeholder="Arkadaş kodu (ör. BL4829)..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-500">
+                            <button onclick="addFriend()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition">
+                                Ekle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Arkadaş Listesi -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-blue-100 space-y-4">
+                        <h2 class="text-lg font-bold text-slate-800">Arkadaşların</h2>
+                        <div id="friends-list" class="space-y-2.5"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 1v1 İNGİLİZCE YARIŞI SEKMESİ -->
+            <section id="section-race" class="hidden space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-blue-100 max-w-2xl mx-auto">
+                    <div id="race-lobby" class="text-center space-y-4">
+                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏆</div>
+                        <h2 class="text-2xl font-extrabold text-slate-800">1v1 İngilizce Düellosu</h2>
+                        <p class="text-sm text-slate-500">Arkadaşlarınla veya hızlı pratik modunda 5 soruluk İngilizce yarışına katıl!</p>
+                        <div id="race-lobby-actions" class="flex flex-wrap justify-center gap-3 pt-2">
+                            <button onclick="startRace('Pratik Rakip')" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-200 transition">
+                                ⚡ Hızlı Pratik Düellosu Başlat
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="race-arena" class="hidden space-y-5">
+                        <div class="flex items-center justify-between bg-blue-50 p-4 rounded-xl border border-blue-100">
+                            <div class="text-center">
+                                <span class="text-xs text-slate-500 block">Sen</span>
+                                <span id="race-my-score" class="text-2xl font-extrabold text-blue-700">0</span>
+                            </div>
+                            <div class="text-sm font-bold text-slate-400">VS</div>
+                            <div class="text-center">
+                                <span id="race-opponent-name" class="text-xs text-slate-500 block">Rakip</span>
+                                <span id="race-opp-score" class="text-2xl font-extrabold text-rose-600">0</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <span id="race-q-count" class="text-xs font-bold text-blue-600">Soru 1/5</span>
+                            <h3 id="race-question" class="text-lg font-bold text-slate-800"></h3>
+                            <div id="race-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            setDoc,
+            getDoc,
+            updateDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            arrayUnion
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- FIREBASE YAPILANDIRMASI ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBiqjiHgIGD7YcOUgRXVKYXfc4I_Zm3r6o",
+            authDomain: "bingolingo-a3eb1.firebaseapp.com",
+            projectId: "bingolingo-a3eb1",
+            storageBucket: "bingolingo-a3eb1.firebasestorage.app",
+            messagingSenderId: "631663718899",
+            appId: "1:631663718899:web:279fd4ad3320756bc5e286",
+            measurementId: "G-85B27NL0L5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- BİLDİRİM SİSTEMİ ---
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-blue-700';
+            toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-semibold transform transition-all duration-300 pointer-events-auto`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- KULLANICI DURUMU ---
+        let currentUser = null;
+        let authMode = 'login';
+        let selectedGrade = 1;
+        let selectedTerm = 1;
+        let selectedChapter = 0;
+        let friends = [];
+
+        function generateFriendCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = 'BL';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function getFirebaseErrorMessage(error) {
+            const code = error?.code || '';
+            if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+                return 'E-posta veya şifre hatalı.';
+            }
+            if (code === 'auth/user-not-found') {
+                return 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
+            }
+            if (code === 'auth/email-already-in-use') {
+                return 'Bu e-posta adresi zaten kullanımda.';
+            }
+            if (code === 'auth/weak-password') {
+                return 'Şifre en az 6 karakter olmalıdır.';
+            }
+            if (code === 'auth/invalid-email') {
+                return 'Lütfen geçerli bir e-posta adresi girin.';
+            }
+            if (code === 'auth/operation-not-allowed') {
+                return 'Firebase Console üzerinden bu giriş yöntemi henüz aktifleştirilmemiş.';
+            }
+            return 'Bir hata oluştu: ' + (error?.message || 'Bilinmeyen hata');
+        }
+
+        async function addXP(amount) {
+            if (!currentUser) return;
+            currentUser.xp = (currentUser.xp || 0) + amount;
+            document.getElementById('header-xp').innerText = `${currentUser.xp} XP`;
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    xp: currentUser.xp
+                });
+            } catch (e) {
+                console.error('XP güncellenemedi:', e);
+            }
+        }
+
+        async function markUnitCompleted(unitKey) {
+            if (!currentUser) return;
+            if (!currentUser.completedUnits) currentUser.completedUnits = [];
+            if (!currentUser.completedUnits.includes(unitKey)) {
+                currentUser.completedUnits.push(unitKey);
+                try {
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        completedUnits: arrayUnion(unitKey)
+                    });
+                } catch (e) {
+                    console.error('Bölüm kaydedilemedi:', e);
+                }
+            }
+        }
+
+        // --- MEB MAARİF MODELİ MÜFREDAT VERİSİ (1-12. SINIF | 1. VE 2. KİTAP - HER KİTAP 5 BÖLÜM) ---
+        const gradeTopics = {
+            1: {
+                1: [
+                    { words: [{ en: "Hello", tr: "Merhaba", ex: "Hello, my name is Ali." }, { en: "Good morning", tr: "Günaydın", ex: "Good morning, teacher!" }, { en: "Red", tr: "Kırmızı", ex: "The apple is red." }], grammar: "Temel selamlaşma kalıpları: Hello, Hi, Good morning. Renkler ve kendini tanıtma." },
+                    { words: [{ en: "Blue", tr: "Mavi", ex: "The sky is blue." }, { en: "Yellow", tr: "Sarı", ex: "The sun is yellow." }, { en: "Green", tr: "Yeşil", ex: "The tree is green." }], grammar: "Ana renkleri tanıma ve 'What color is it?' sorusuna cevap verme." },
+                    { words: [{ en: "One", tr: "Bir", ex: "One book." }, { en: "Two", tr: "İki", ex: "Two pencils." }, { en: "Three", tr: "Üç", ex: "Three bags." }], grammar: "1'den 10'a kadar sayılar ve nesneleri sayma." },
+                    { words: [{ en: "Pencil", tr: "Kurşun kalem", ex: "This is my pencil." }, { en: "Bag", tr: "Çanta", ex: "Open your bag." }, { en: "Desk", tr: "Sıra", ex: "Sit at your desk." }], grammar: "Sınıf eşyaları ve 'This is a...' kalıbı." },
+                    { words: [{ en: "Stand up", tr: "Ayağa kalk", ex: "Stand up, please." }, { en: "Sit down", tr: "Otur", ex: "Sit down, please." }, { en: "Listen", tr: "Dinle", ex: "Listen to me." }], grammar: "Basit sınıf içi komutlar ve nezaket ifadeleri (Please, Thank you)." }
+                ],
+                2: [
+                    { words: [{ en: "Cat", tr: "Kedi", ex: "I have a cute cat." }, { en: "Dog", tr: "Köpek", ex: "The dog is happy." }, { en: "Bird", tr: "Kuş", ex: "The bird can fly." }], grammar: "Evcil hayvan isimleri ve 'It is a...' yapısı." },
+                    { words: [{ en: "Head", tr: "Baş", ex: "Touch your head." }, { en: "Hand", tr: "El", ex: "Wash your hands." }, { en: "Eye", tr: "Göz", ex: "Close your eyes." }], grammar: "Vücudumuzun bölümleri ve 'Touch your...' yönergeleri." },
+                    { words: [{ en: "Apple", tr: "Elma", ex: "I like apples." }, { en: "Orange", tr: "Portakal", ex: "It is an orange." }, { en: "Pear", tr: "Armut", ex: "Eat a pear." }], grammar: "Meyveler ve 'I like...' ifadesi." },
+                    { words: [{ en: "Run", tr: "Koşmak", ex: "I can run fast." }, { en: "Jump", tr: "Zıplamak", ex: "Jump high!" }, { en: "Swim", tr: "Yüzmek", ex: "Fish can swim." }], grammar: "'I can / I can't' ile yapabildiğimiz hareketler." },
+                    { words: [{ en: "Happy", tr: "Mutlu", ex: "I am happy." }, { en: "Sad", tr: "Üzgün", ex: "Don't be sad." }, { en: "Good", tr: "İyi", ex: "I feel good." }], grammar: "Duygularımızı ifade etme: 'How are you? - I am happy.'" }
+                ]
+            }
+        };
+
+        function buildFullCurriculum() {
+            const curriculum = {};
+            const baseWords = [
+                { en: "Respect", tr: "Saygı", ex: "We should show respect." },
+                { en: "Success", tr: "Başarı", ex: "Hard work brings success." },
+                { en: "Knowledge", tr: "Bilgi", ex: "Knowledge is power." },
+                { en: "Future", tr: "Gelecek", ex: "Plan for your future." },
+                { en: "Culture", tr: "Kültür", ex: "Learn about world culture." },
+                { en: "Nature", tr: "Doğa", ex: "Protect the nature." },
+                { en: "Science", tr: "Bilim", ex: "Science explains the world." },
+                { en: "Health", tr: "Sağlık", ex: "Health is very important." },
+                { en: "Travel", tr: "Seyahat", ex: "I love to travel." },
+                { en: "Teamwork", tr: "Takım çalışması", ex: "Teamwork makes us stronger." },
+                { en: "Habit", tr: "Alışkanlık", ex: "Reading is a good habit." },
+                { en: "Goal", tr: "Hedef", ex: "Set a clear goal." },
+                { en: "Value", tr: "Değer", ex: "Values guide our lives." },
+                { en: "Skill", tr: "Beceri", ex: "Practice improves your skill." },
+                { en: "Idea", tr: "Fikir", ex: "That is a great idea!" }
+            ];
+
+            for (let g = 1; g <= 12; g++) {
+                curriculum[g] = { 1: [], 2: [] };
+                for (let term = 1; term <= 2; term++) {
+                    for (let ch = 1; ch <= 5; ch++) {
+                        if (gradeTopics[g] && gradeTopics[g][term] && gradeTopics[g][term][ch - 1]) {
+                            const item = gradeTopics[g][term][ch - 1];
+                            curriculum[g][term].push({
+                                title: `${term}. Kitap - ${ch}. Bölüm`,
+                                words: item.words,
+                                grammar: item.grammar
+                            });
+                        } else {
+                            const offset = ((g * 3) + (term * 5) + ch) % baseWords.length;
+                            const w1 = baseWords[offset % baseWords.length];
+                            const w2 = baseWords[(offset + 1) % baseWords.length];
+                            const w3 = baseWords[(offset + 2) % baseWords.length];
+                            curriculum[g][term].push({
+                                title: `${term}. Kitap - ${ch}. Bölüm`,
+                                words: [w1, w2, w3],
+                                grammar: `${g}. Sınıf ${term}. Kitap ${ch}. Bölüm dilbilgisi özeti: Temel cümle yapıları, zaman kipleri ve günlük konuşma kalıpları.`
+                            });
+                        }
+                    }
+                }
+            }
+            return curriculum;
+        }
+
+        const mebCurriculum = buildFullCurriculum();
+
+        // --- FIREBASE AUTH OTURUM DİNLEYİCİSİ ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userRef = doc(db, 'users', user.uid);
+                    const snap = await getDoc(userRef);
+
+                    if (snap.exists()) {
+                        currentUser = { uid: user.uid, ...snap.data() };
+                    } else {
+                        const newUserData = {
+                            name: user.displayName || user.email.split('@')[0],
+                            email: user.email,
+                            grade: 1,
+                            xp: 0,
+                            streak: 1,
+                            friendCode: generateFriendCode(),
+                            friends: [],
+                            completedUnits: []
+                        };
+                        await setDoc(userRef, newUserData);
+                        currentUser = { uid: user.uid, ...newUserData };
+                    }
+                    await loadFriendsDetails();
+                    enterApp();
+                } catch (e) {
+                    console.error('Kullanıcı verisi alınamadı:', e);
+                    showToast('Kullanıcı verileri yüklenirken hata oluştu.', 'error');
+                }
+            } else {
+                currentUser = null;
+                friends = [];
+                document.getElementById('app-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        });
+
+        async function loadFriendsDetails() {
+            friends = [];
+            if (!currentUser || !currentUser.friends || currentUser.friends.length === 0) {
+                return;
+            }
+            for (const fUid of currentUser.friends) {
+                try {
+                    const fSnap = await getDoc(doc(db, 'users', fUid));
+                    if (fSnap.exists()) {
+                        const data = fSnap.data();
+                        friends.push({
+                            uid: fUid,
+                            name: data.name || 'Öğrenci',
+                            grade: data.grade || 1,
+                            xp: data.xp || 0
+                        });
+                    }
+                } catch (e) {
+                    console.error('Arkadaş bilgisi alınamadı:', e);
+                }
+            }
+        }
+
+        // --- GİRİŞ / KAYIT İŞLEMLERİ ---
+        function switchAuthTab(mode) {
+            authMode = mode;
+            const loginTab = document.getElementById('tab-login');
+            const regTab = document.getElementById('tab-register');
+            const regExtra = document.getElementById('register-extra');
+            const submitBtn = document.getElementById('auth-submit-btn');
+
+            if (mode === 'login') {
+                loginTab.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition';
+                regTab.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition';
+                regExtra.classList.add('hidden');
+                submitBtn.innerText = 'Giriş Yap';
+            } else {
+                regTab.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition';
+                loginTab.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition';
+                regExtra.classList.remove('hidden');
+                submitBtn.innerText = 'Kayıt Ol ve Başla';
+            }
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const grade = parseInt(document.getElementById('auth-grade').value) || 1;
+
+            if (!email || !password) {
+                showToast('Lütfen e-posta ve şifre alanlarını doldurun.', 'error');
+                return;
+            }
+
+            try {
+                if (authMode === 'login') {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showToast('Giriş başarılı!', 'success');
+                } else {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    const newUserData = {
+                        name: email.split('@')[0],
+                        email: email,
+                        grade: grade,
+                        xp: 0,
+                        streak: 1,
+                        friendCode: generateFriendCode(),
+                        friends: [],
+                        completedUnits: []
+                    };
+                    await setDoc(doc(db, 'users', cred.user.uid), newUserData);
+                    showToast('Kayıt tamamlandı! Hoş geldin!', 'success');
+                }
+            } catch (error) {
+                showToast(getFirebaseErrorMessage(error), 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                await signOut(auth);
+                showToast('Çıkış yapıldı.');
+            } catch (error) {
+                showToast('Çıkış yapılırken hata oluştu.', 'error');
+            }
+        }
+
+        function enterApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            selectedGrade = currentUser.grade || 1;
+            document.getElementById('grade-selector').value = selectedGrade;
+            document.getElementById('header-user').innerText = currentUser.name || currentUser.email;
+            document.getElementById('header-xp').innerText = `${currentUser.xp || 0} XP`;
+            document.getElementById('my-friend-code').innerText = currentUser.friendCode || '------';
+            renderChapters();
+            renderFriends();
+        }
+
+        // --- NAVİGASYON ---
+        function switchMainTab(tab) {
+            ['lessons', 'friends', 'race'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${t}`);
+                btn.className = 'nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-blue-100 hover:bg-blue-600/50 whitespace-nowrap transition';
+            });
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tab}`);
+            activeBtn.className = 'nav-btn px-4 py-2 rounded-xl text-sm font-semibold bg-white text-blue-700 shadow-sm whitespace-nowrap transition';
+        }
+
+        // --- DERSLER VE BÖLÜMLER ---
+        async function changeGrade(grade) {
+            selectedGrade = parseInt(grade);
+            selectedChapter = 0;
+            renderChapters();
+            if (currentUser) {
+                currentUser.grade = selectedGrade;
+                try {
+                    await updateDoc(doc(db, 'users', currentUser.uid), { grade: selectedGrade });
+                } catch (e) {
+                    console.error('Sınıf güncellenemedi:', e);
+                }
+            }
+        }
+
+        function changeTerm(term) {
+            selectedTerm = term;
+            selectedChapter = 0;
+            document.getElementById('term-btn-1').className = term === 1
+                ? 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition'
+                : 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-700 transition';
+            document.getElementById('term-btn-2').className = term === 2
+                ? 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition'
+                : 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-700 transition';
+            renderChapters();
+        }
+
+        function selectChapter(index) {
+            selectedChapter = index;
+            renderChapters();
+        }
+
+        function renderChapters() {
+            const chapters = mebCurriculum[selectedGrade][selectedTerm];
+            const grid = document.getElementById('chapters-grid');
+            grid.innerHTML = '';
+
+            chapters.forEach((ch, idx) => {
+                const isActive = idx === selectedChapter;
+                const btn = document.createElement('button');
+                btn.onclick = () => selectChapter(idx);
+                btn.className = isActive
+                    ? 'p-3.5 rounded-2xl bg-blue-600 text-white font-bold text-sm shadow-md shadow-blue-200 text-left transition'
+                    : 'p-3.5 rounded-2xl bg-white hover:bg-blue-50 text-slate-700 font-semibold text-sm border border-blue-100 text-left transition';
+                btn.innerHTML = `<span class="text-xs opacity-80 block">${selectedTerm}. Kitap</span><span>${idx + 1}. Bölüm</span>`;
+                grid.appendChild(btn);
+            });
+
+            const current = chapters[selectedChapter];
+            document.getElementById('current-chapter-badge').innerText = `${selectedGrade}. Sınıf • ${selectedTerm}. Kitap`;
+            document.getElementById('current-chapter-title').innerText = current.title;
+            document.getElementById('chapter-grammar').innerText = current.grammar;
+            document.getElementById('chapter-quiz-box').classList.add('hidden');
+            switchStudyMode('cards');
+
+            const cardsContainer = document.getElementById('flashcards-container');
+            cardsContainer.innerHTML = '';
+            current.words.forEach(w => {
+                const card = document.createElement('div');
+                card.className = 'perspective-1000 h-40 cursor-pointer';
+                card.onclick = () => card.classList.toggle('card-flipped');
+                card.innerHTML = `
+                    <div class="transform-style-3d relative w-full h-full">
+                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl p-4 flex flex-col justify-between shadow-md">
+                            <div class="flex justify-between items-start">
+                                <span class="text-[11px] uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">İngilizce</span>
+                                <button type="button" onclick="event.stopPropagation(); speakWord('${w.en}')" class="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm" title="Dinle">🔊</button>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xl font-extrabold">${w.en}</div>
+                                <div class="text-xs text-blue-100 mt-1">Çevirmek için tıkla</div>
+                            </div>
+                            <div></div>
+                        </div>
+                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white border-2 border-blue-500 text-slate-800 rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-md">
+                            <div class="text-lg font-extrabold text-blue-700">${w.tr}</div>
+                            <p class="text-xs text-slate-500 mt-2 italic">"${w.ex}"</p>
+                        </div>
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
+            initMatchingGame();
+            initWritePractice();
+            initListenPractice();
+            initScramblePractice();
+        }
+
+        // --- ÇALIŞMA MODU DEĞİŞTİRİCİ ---
+        function switchStudyMode(mode) {
+            document.querySelectorAll('.study-mode-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.study-tab-btn').forEach(b => {
+                b.className = 'study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 whitespace-nowrap transition';
+            });
+            if (mode !== 'quiz') {
+                document.getElementById(`study-mode-${mode}`).classList.remove('hidden');
+                document.getElementById(`study-tab-${mode}`).className = 'study-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm whitespace-nowrap transition';
+            }
+        }
+
+        // --- 1. EŞLEŞTİRME OYUNU ---
+        let matchSelectedEn = null;
+        let matchSelectedTr = null;
+        let matchedCount = 0;
+
+        function initMatchingGame() {
+            const words = mebCurriculum[selectedGrade][selectedTerm][selectedChapter].words;
+            const enCol = document.getElementById('match-en-col');
+            const trCol = document.getElementById('match-tr-col');
+            enCol.innerHTML = '';
+            trCol.innerHTML = '';
+            matchSelectedEn = null;
+            matchSelectedTr = null;
+            matchedCount = 0;
+
+            const shuffledTr = [...words].sort(() => Math.random() - 0.5);
+
+            words.forEach(w => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-3 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 font-bold text-sm text-blue-800 transition';
+                btn.innerText = w.en;
+                btn.onclick = () => {
+                    document.querySelectorAll('#match-en-col button').forEach(b => b.classList.remove('ring-2', 'ring-blue-600'));
+                    btn.classList.add('ring-2', 'ring-blue-600');
+                    matchSelectedEn = { word: w.en, btn };
+                    checkMatch();
+                };
+                enCol.appendChild(btn);
+            });
+
+            shuffledTr.forEach(w => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-semibold text-sm text-slate-700 transition';
+                btn.innerText = w.tr;
+                btn.onclick = () => {
+                    document.querySelectorAll('#match-tr-col button').forEach(b => b.classList.remove('ring-2', 'ring-blue-600'));
+                    btn.classList.add('ring-2', 'ring-blue-600');
+                    matchSelectedTr = { word: w.en, btn };
+                    checkMatch();
+                };
+                trCol.appendChild(btn);
+            });
+        }
+
+        function checkMatch() {
+            if (!matchSelectedEn || !matchSelectedTr) return;
+            if (matchSelectedEn.word === matchSelectedTr.word) {
+                matchSelectedEn.btn.className = 'w-full p-3 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-sm border border-emerald-300 opacity-60 cursor-default';
+                matchSelectedTr.btn.className = 'w-full p-3 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-sm border border-emerald-300 opacity-60 cursor-default';
+                matchSelectedEn.btn.disabled = true;
+                matchSelectedTr.btn.disabled = true;
+                matchedCount++;
+                if (matchedCount === 3) {
+                    addXP(15);
+                    showToast('🎉 Tüm kelimeleri eşleştirdin! (+15 XP)', 'success');
+                }
+            } else {
+                showToast('Eşleşme yanlış, tekrar dene!', 'error');
+                matchSelectedEn.btn.classList.remove('ring-2', 'ring-blue-600');
+                matchSelectedTr.btn.classList.remove('ring-2', 'ring-blue-600');
+            }
+            matchSelectedEn = null;
+            matchSelectedTr = null;
+        }
+
+        // --- 2. YAZMA ALIŞTIRMASI ---
+        let writeIdx = 0;
+        function initWritePractice() {
+            writeIdx = 0;
+            renderWritePrompt();
+        }
+        function renderWritePrompt() {
+            const words = mebCurriculum[selectedGrade][selectedTerm][selectedChapter].words;
+            const current = words[writeIdx % words.length];
+            document.getElementById('write-progress').innerText = `${(writeIdx % words.length) + 1}/${words.length}`;
+            document.getElementById('write-prompt').innerText = current.tr;
+            document.getElementById('write-input').value = '';
+        }
+        function checkWriteAnswer() {
+            const words = mebCurriculum[selectedGrade][selectedTerm][selectedChapter].words;
+            const current = words[writeIdx % words.length];
+            const val = document.getElementById('write-input').value.trim().toLowerCase();
+            if (val === current.en.toLowerCase()) {
+                addXP(10);
+                showToast('Harika! Doğru yazdın (+10 XP)', 'success');
+                writeIdx++;
+                renderWritePrompt();
+            } else {
+                showToast('Yanlış yazım, tekrar dene!', 'error');
+            }
+        }
+        function showWriteHint() {
+            const words = mebCurriculum[selectedGrade][selectedTerm][selectedChapter].words;
+            const current = words[writeIdx % words.length];
+            showToast(`İpucu: "${current.en[0]}..." ile başlıyor (${current.en.length} harf).`);
+        }
+
+        // --- 3. DİNLE & SEÇ ---
+        let listenTarget = null;
+        function initListenPractice() {
+            const words = mebCurriculum[selectedGrade][selectedTerm][selectedChapter].words;
+            listenTarget = words[Math.floor(Math.random() * words.length)];
+            const opts = document.getElementById('listen-options');
+            opts.innerHTML = '';
+            [...words].sort(() => Math.random() - 0.5).forEach(w => {
+                const b = document.createElement('button');
+                b.className = 'p-3 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 font-semibold text-sm transition';
+                b.innerText = w.tr;
+                b.onclick = () => {
+                    if (w.en === listenTarget.en) {
+                        addXP(10);
+                        showToast('Doğru duydun! (+10 XP)', 'success');
+                        initListenPractice();
+                    } else {
+                        showToast('Yanlış seçenek, tekrar dinle.', 'error');
+                    }
+                };
+                opts.appendChild(b);
+            });
+        }
+        function playListenWord() {
+            if (listenTarget) speakWord(listenTarget.en);
+        }
+
+        // --- SESLİ OKUMA (TEXT-TO-SPEECH) ---
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast('Tarayıcınız sesli okumayı desteklemiyor.', 'error');
+            }
+        }
+
+        // --- 4. HARF KARIŞTIRMA ---
+        let scrambleTarget = null;
+        function initScramblePractice() {
+            const words = mebCurriculum[selectedGrade][selectedTerm][selectedChapter].words;
+            scrambleTarget = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('scramble-meaning').innerText = scrambleTarget.tr;
+            document.getElementById('scramble-input').value = '';
+            const lettersDiv = document.getElementById('scramble-letters');
+            lettersDiv.innerHTML = '';
+            const chars = scrambleTarget.en.split('').sort(() => Math.random() - 0.5);
+            chars.forEach(c => {
+                const span = document.createElement('span');
+                span.className = 'w-9 h-9 rounded-lg bg-blue-100 text-blue-800 font-extrabold flex items-center justify-center border border-blue-200 uppercase';
+                span.innerText = c;
+                lettersDiv.appendChild(span);
+            });
+        }
+        function checkScrambleAnswer() {
+            const val = document.getElementById('scramble-input').value.trim().toLowerCase();
+            if (val === scrambleTarget.en.toLowerCase()) {
+                addXP(10);
+                showToast('Tebrikler! Kelimeyi çözdün (+10 XP)', 'success');
+                initScramblePractice();
+            } else {
+                showToast('Harfleri kontrol edip tekrar dene.', 'error');
+            }
+        }
+
+        // --- BÖLÜM QUİZİ ---
+        let quizQuestions = [];
+        let quizIdx = 0;
+        let quizScore = 0;
+
+        function startChapterQuiz() {
+            const current = mebCurriculum[selectedGrade][selectedTerm][selectedChapter];
+            const words = current.words;
+            quizQuestions = [
+                { q: `"${words[0].en}" kelimesinin Türkçe anlamı nedir?`, options: [words[0].tr, words[1].tr, words[2].tr, "Bilgisayar"], ans: 0 },
+                { q: `"${words[1].tr}" kelimesinin İngilizcesi hangisidir?`, options: [words[0].en, words[1].en, words[2].en, "Window"], ans: 1 },
+                { q: `"${words[2].en}" kelimesinin Türkçe anlamı nedir?`, options: [words[0].tr, words[1].tr, words[2].tr, "Masa"], ans: 2 },
+                { q: `Aşağıdaki örnek cümlelerden hangisi "${words[0].en}" içerir?`, options: [words[0].ex, words[1].ex, words[2].ex, "I am at home."], ans: 0 }
+            ];
+            quizIdx = 0;
+            quizScore = 0;
+            document.getElementById('chapter-quiz-box').classList.remove('hidden');
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            if (quizIdx >= quizQuestions.length) {
+                const earned = quizScore * 5;
+                addXP(earned);
+                markUnitCompleted(`${selectedGrade}-${selectedTerm}-${selectedChapter + 1}`);
+                document.getElementById('chapter-quiz-box').innerHTML = `
+                    <div class="text-center py-4 space-y-2">
+                        <div class="text-3xl">🎉</div>
+                        <h4 class="font-bold text-lg text-slate-800">Test Tamamlandı!</h4>
+                        <p class="text-sm text-slate-600">${quizQuestions.length} sorudan ${quizScore} doğru yaptın (+${earned} XP)</p>
+                    </div>
+                `;
+                showToast(`Tebrikler! +${earned} XP kazandın.`, 'success');
+                return;
+            }
+            const item = quizQuestions[quizIdx];
+            document.getElementById('quiz-progress').innerText = `Soru ${quizIdx + 1}/${quizQuestions.length}`;
+            document.getElementById('quiz-question').innerText = item.q;
+            const opts = document.getElementById('quiz-options');
+            opts.innerHTML = '';
+            item.options.forEach((opt, i) => {
+                const b = document.createElement('button');
+                b.className = 'p-3 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-400 text-sm font-semibold text-left transition';
+                b.innerText = opt;
+                b.onclick = () => {
+                    if (i === item.ans) {
+                        quizScore++;
+                        showToast('Doğru cevap! +5 XP', 'success');
+                    } else {
+                        showToast('Yanlış cevap.', 'error');
+                    }
+                    quizIdx++;
+                    renderQuizQuestion();
+                };
+                opts.appendChild(b);
+            });
+        }
+
+        function renderFriends() {
+            const list = document.getElementById('friends-list');
+            if (!list) return;
+            if (!friends || friends.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">Henüz arkadaşın yok. Arkadaş koduyla ekleyebilirsin.</p>';
+                return;
+            }
+            list.innerHTML = '';
+            friends.forEach(f => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 bg-blue-50/70 rounded-xl border border-blue-100';
+                item.innerHTML = `
+                    <div>
+                        <span class="font-bold text-sm text-slate-800 block">${f.name}</span>
+                        <span class="text-xs text-slate-500">${f.grade}. Sınıf • ${f.xp} XP</span>
+                    </div>
+                    <button onclick="startRace('${f.name}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition">
+                        Yarış
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        async function addFriend() {
+            const input = document.getElementById('friend-code-input');
+            const val = input.value.trim().toUpperCase();
+            if (!val || !currentUser) return;
+
+            if (val === currentUser.friendCode) {
+                showToast('Kendi arkadaş kodunu ekleyemezsin.', 'error');
+                return;
+            }
+
+            try {
+                const q = query(collection(db, 'users'), where('friendCode', '==', val));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    showToast('Bu koda sahip bir kullanıcı bulunamadı.', 'error');
+                    return;
+                }
+
+                const friendDoc = querySnapshot.docs[0];
+                const friendUid = friendDoc.id;
+
+                if (currentUser.friends && currentUser.friends.includes(friendUid)) {
+                    showToast('Bu kullanıcı zaten arkadaş listende.', 'info');
+                    return;
+                }
+
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    friends: arrayUnion(friendUid)
+                });
+
+                if (!currentUser.friends) currentUser.friends = [];
+                currentUser.friends.push(friendUid);
+
+                await loadFriendsDetails();
+                input.value = '';
+                renderFriends();
+                showToast(`${friendDoc.data().name || 'Arkadaşın'} listeye eklendi!`, 'success');
+            } catch (error) {
+                console.error('Arkadaş eklenemedi:', error);
+                showToast('Arkadaş eklenirken bir hata oluştu.', 'error');
+            }
+        }
+
+        function copyFriendCode() {
+            const code = document.getElementById('my-friend-code').innerText;
+            const el = document.createElement('textarea');
+            el.value = code;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('Arkadaş kodun kopyalandı!', 'success');
+        }
+
+        // --- 1v1 İNGİLİZCE YARIŞI ---
+        const racePool = [
+            { q: '"Success" ne demektir?', options: ['Başarı', 'Hata', 'Güneş', 'Okul'], ans: 0 },
+            { q: '"Kitap" İngilizcede nedir?', options: ['Pen', 'Book', 'Desk', 'Bag'], ans: 1 },
+            { q: '"Respect" ne demektir?', options: ['Korku', 'Saygı', 'Oyun', 'Zaman'], ans: 1 },
+            { q: '"Future" ne demektir?', options: ['Geçmiş', 'Şimdi', 'Gelecek', 'Dün'], ans: 2 },
+            { q: '"Knowledge" ne demektir?', options: ['Bilgi', 'Soru', 'Cevap', 'Sınıf'], ans: 0 }
+        ];
+        let raceStep = 0;
+        let myRaceScore = 0;
+        let oppRaceScore = 0;
+
+        function startRace(opponent) {
+            raceStep = 0;
+            myRaceScore = 0;
+            oppRaceScore = 0;
+            document.getElementById('race-lobby').classList.add('hidden');
+            document.getElementById('race-arena').classList.remove('hidden');
+            document.getElementById('race-opponent-name').innerText = opponent;
+            document.getElementById('race-my-score').innerText = '0';
+            document.getElementById('race-opp-score').innerText = '0';
+            renderRaceQuestion();
+        }
+
+        function renderRaceQuestion() {
+            if (raceStep >= racePool.length) {
+                const win = myRaceScore >= oppRaceScore;
+                if (win) {
+                    addXP(50);
+                }
+                showToast(win ? '🏆 Yarışı Kazandın! (+50 XP)' : 'Yarış bitti! Tekrar dene.', win ? 'success' : 'info');
+                document.getElementById('race-arena').classList.add('hidden');
+                document.getElementById('race-lobby').classList.remove('hidden');
+                return;
+            }
+            const item = racePool[raceStep];
+            document.getElementById('race-q-count').innerText = `Soru ${raceStep + 1}/5`;
+            document.getElementById('race-question').innerText = item.q;
+            const opts = document.getElementById('race-options');
+            opts.innerHTML = '';
+            item.options.forEach((opt, i) => {
+                const b = document.createElement('button');
+                b.className = 'p-3.5 rounded-xl border border-slate-200 hover:bg-blue-50 hover:border-blue-400 font-semibold text-sm text-left transition';
+                b.innerText = opt;
+                b.onclick = () => {
+                    if (i === item.ans) myRaceScore += 20;
+                    if (Math.random() > 0.4) oppRaceScore += 20;
+                    document.getElementById('race-my-score').innerText = myRaceScore;
+                    document.getElementById('race-opp-score').innerText = oppRaceScore;
+                    raceStep++;
+                    renderRaceQuestion();
+                };
+                opts.appendChild(b);
+            });
+        }
+
+        // Modül kapsamındaki fonksiyonları HTML onclick olaylarına bağla
+        window.switchAuthTab = switchAuthTab;
+        window.handleAuthSubmit = handleAuthSubmit;
+        window.logout = logout;
+        window.switchMainTab = switchMainTab;
+        window.changeGrade = changeGrade;
+        window.changeTerm = changeTerm;
+        window.selectChapter = selectChapter;
+        window.switchStudyMode = switchStudyMode;
+        window.initMatchingGame = initMatchingGame;
+        window.checkWriteAnswer = checkWriteAnswer;
+        window.showWriteHint = showWriteHint;
+        window.playListenWord = playListenWord;
+        window.speakWord = speakWord;
+        window.checkScrambleAnswer = checkScrambleAnswer;
+        window.startChapterQuiz = startChapterQuiz;
+        window.addFriend = addFriend;
+        window.copyFriendCode = copyFriendCode;
+        window.startRace = startRace;
+    </script>
+</body>
+</html>
